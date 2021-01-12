@@ -22,34 +22,27 @@ Format
 */
 
 const fs = require("fs");
-const { type } = require("os");
-
-// const file = fs.readFileSync("./testFile.md").toString("utf-8");
-
-
-// const pattern = /(##.+|^#\s.+)/;
-// const text = file.split(/(##.+|#\s.+)/);
-
-//*Split string into sections
-//*Create objects for each Main section
-//*Put subsections in Main sections.
-//*Get each section and subsection into its own object.
 
 class Section {
   constructor(title) {
-    this.subSectionTitle = title;
+    this.sectionTitle = title;
     this.name = (() => {
-      let name = this.subSectionTitle.match(/([^#\r\n]+)/)[0];
-      name = name.substring(1)
+      // let name = this.subSectionTitle.match(/([^#\r\n]+)/)[0];
+      //  name = name.substring(1)
+       let name = this.sectionTitle;
       return name;
     })();
+    this.content = '',
+    this.subSections = [];
   }
 }
 
 
 
+
+
 class ParseFile {
-  constructor(inputFile, outputName = 'output.md') {
+  constructor(inputFile, outputName = "output.md") {
     this.file = fs.readFileSync(inputFile).toString("utf-8");
     //Matches each Section and each subsection.
     this.pattern = /(##.+|^#\s.+)/;
@@ -58,29 +51,53 @@ class ParseFile {
 
   parseSections = (file) => {
     const sections = [];
+    let sectionCount = -1;
+    let subSection = false;
+    let subSectionCount = -1;
+    let sectionHeader = false;
+
     for (let i = 0; i < file.length; i++) {
+      //Skip if blank space
+      if (file[i] == "") {
+        continue;
+      }
+
       //If section is reached Make section
       if (file[i].match(/(##.+|#\s.+)/)) {
         let section = new Section(file[i]);
         section.type = this.determineSectionType(file[i]);
-        if(section.type === 'Page Header'){
-          //get introductory content
-          //if Subsection is reached
-          //get that content
-          //break when new Section header is reached
-        }else if(section.type === 'Section Header'){
-          //get introductory content
-          //if Subsection is reached
-            //get that content
-            //break when new Section header is reached
-        }else if(section.type === 'Subsection'){
-
+        //if subsection push to subsections
+        if (section.type === "Subsection") {
+          sectionHeader = false;
+          sections[sectionCount].subSections.push(section);
+          subSectionCount++;
+          continue;
         }
 
-        
-        sections.push(section);
+        //If new Section Header create new section
+        if (section.type === "Section Header" || section.type === "Page Header") {
+          subSection = false;
+          sectionCount++;
+          subSectionCount = -1;
+          sectionHeader = true;
+          sections.push(section);
+          continue;
+        }
+      }
+
+      //Gather Subsection content.
+      if (subSection === true) {
+        sections[sectionCount].subSections[subSectionCount].content += file[i];
+        continue;
+      }
+      //Gather Section Header Content.
+      if (sectionHeader === true) {
+        //fill section with content.
+        sections[sectionCount].content += file[i];
+        continue;
       }
     }
+
     return sections;
   };
 
@@ -102,40 +119,16 @@ class ParseFile {
     }
   };
 
-  gatherContent = (arr, i) => {
-    for (let j = i + 1; j < arr.length; j++) {
-      let content = "";
-
-      if (!arr[j].match(/(##.+|^#\s.+)/)) {
-        content += arr[j];
-      } else {
-        break;
-      }
-      return content;
-    }
-  };
-
-  parse(){
+  parse() {
     //Split File by section
-     const text = this.file.split(/(##.+|#\s.+)/);
-     const parsedFile = this.parseSections(text);
-
-     return parsedFile
+    const text = this.file.split(/(##.+|#\s.+)/);
+    const parsedFile = this.parseSections(text);
+    return parsedFile;
   }
 }
-
-// const gatherContent = (sectionType, arr, i) => {
-//   switch(sectionType){
-//     case 'Section Header':
-//       content = new Section()
-//     default:
-//     let content = gatherSubSectionContent(arr, i)
-//     return content;
-//   }
-// }
-
-// console.log(parseFile(text));
 
 const fileParser = new ParseFile("./testFile.md");
 
 console.log(fileParser.parse());
+
+

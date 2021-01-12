@@ -7,6 +7,7 @@ This will update prices to wholesale when the window load event fires.  If wsgRu
 `<span id="wsgReloadPrices_Window" style="display: none"></span>`
   
 ## Theme Specific   
+This is theme specific content.
 #### Kingdom   
 Issues with scrollbar on proxy pages and weird select elements.  If this needs to be added again let's make it part of the model.  Put this at the bottom of the DOM content loaded event in wsg-header so it runs for all customers:   
 ```   
@@ -361,7 +362,7 @@ window.addEventListener('load', event => {
 
 ## Accounts   
   
-#### Site redirect issues.   
+## Site redirect issues.   
 If we have an account but can't log in check to see if we are getting automatically redirected based on Geo location.   
 App: **GeoIP Country Redirect**: add `?no_rule=true` to initial url to set cookie that won't redirect you.
 
